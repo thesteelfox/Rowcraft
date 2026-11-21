@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Rowcraft</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Rowcraft">
+<meta name="theme-color" content="#b5483a">
+<style>
+:root{--bg:#faf6f1;--card:#fff;--ink:#2d2926;--mut:#756b63;--line:#e3d9cf;--acc:#b5483a;--accsoft:#f6e3df;--gray:#d9d2ca;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1f1b19;--card:#2a2522;--ink:#f1e9e1;--mut:#a89d94;--line:#433b36;--acc:#e0806f;--accsoft:#46302c;--gray:#4a423d;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#1f1b19;--card:#2a2522;--ink:#f1e9e1;--mut:#a89d94;--line:#433b36;--acc:#e0806f;--accsoft:#46302c;--gray:#4a423d;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 Georgia,'Times New Roman',serif}
+main{max-width:1100px;margin:0 auto;padding:20px 16px 48px}
+h1{font-size:28px;margin:0 0 4px}
+h2{font-size:18px;margin:0 0 12px;color:var(--acc)}
+.sub{color:var(--mut);margin:0 0 20px;font-family:system-ui,sans-serif;font-size:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:16px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:760px){.grid2{grid-template-columns:1fr}}
+label{display:block;font:600 12px system-ui,sans-serif;color:var(--mut);margin:0 0 3px;text-transform:uppercase;letter-spacing:.04em}
+input,select,textarea{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font:15px system-ui,sans-serif}
+textarea{resize:vertical;margin-top:4px;font:15px/1.4 ui-monospace,Menlo,monospace}
+input[type=color]{padding:0;width:34px;height:34px;border-radius:6px}
+.f{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.f .w{grid-column:1/-1}
+button{font:600 14px system-ui,sans-serif;padding:8px 14px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer}
+button.p{background:var(--acc);color:#fff;border-color:var(--acc)}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:end;margin-bottom:12px}
+.bar>div{width:100px}
+.pal{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;align-items:center}
+.pal button{display:flex;align-items:center;gap:6px}
+.pal button.on{background:var(--accsoft);border-color:var(--acc)}
+.sym{display:inline-block;width:22px;text-align:center;font:700 16px monospace}
+.scroll{overflow-x:auto;padding-bottom:6px}
+table.ch{border-collapse:collapse;user-select:none;touch-action:none}
+.ch td{width:30px;height:30px;border:1px solid var(--line);text-align:center;font:700 15px monospace;cursor:pointer;padding:0}
+.ch td.n{background:var(--gray)}
+.ch td.rl{border-left:2px solid var(--acc)}
+.ch td.rr{border-right:2px solid var(--acc)}
+.ch tr.cur td{box-shadow:inset 0 3px 0 var(--acc),inset 0 -3px 0 var(--acc)}
+.ch th{font:11px system-ui,sans-serif;color:var(--mut);font-weight:400;padding:0 5px;min-width:24px}
+.ch th.rp{color:var(--acc);font-weight:700}
+ol{list-style:none;margin:0;padding:0}
+li.row{padding:8px 6px;border-bottom:1px solid var(--line);border-radius:6px}
+li.row.cur{background:var(--accsoft)}
+li b{color:var(--acc);font-size:15px}
+.cnt{color:var(--mut);font:13px system-ui,sans-serif}
+.warn{color:#c0392b;font:13px system-ui,sans-serif}
+.hint{font:13px system-ui,sans-serif;color:var(--mut);margin:6px 0}
+#next,#prev{padding:14px 20px;font-size:17px}
+.ch td.sel{box-shadow:inset 0 0 0 100px rgba(181,72,58,.28)}
+@media print{.noprint{display:none}body{background:#fff;color:#000}.card{border-color:#999}textarea{border:0;resize:none}.scroll{overflow:visible}li.row,.card{break-inside:avoid}.ch td{width:22px;height:22px;font-size:12px}input,select{border:0;background:none;padding:0}}
+</style>
+</head>
+<body>
+<main>
+<h1>Rowcraft</h1>
+<p class="sub">Chart it. Knit it. Edit the chart or the written instructions &mdash; each updates the other.</p>
+
+<div class="card"><label>Pattern name</label><input id="title" value="My knitting pattern"></div>
+<div class="card"><h2>Project</h2><div class="f">
+<div><label>Status</label><select id="p_status"><option>Planning</option><option>Swatching</option><option>In progress</option><option>Finished</option><option>On hold</option></select></div>
+<div><label>Start date</label><input id="p_start" type="date"></div>
+<div><label>Finish date</label><input id="p_done" type="date"></div>
+<div><label>Notes</label><input id="p_notes" placeholder="e.g. gift for Sam"></div>
+</div></div>
+
+<div class="grid2">
+<div class="card">
+<h2>Yarn</h2>
+<div class="f">
+<div class="w"><label>Yarn name / brand</label><input id="y_name"></div>
+<div><label>Weight category</label>
+<select id="y_weight"><option>Lace (0)</option><option>Super fine / Fingering (1)</option><option>Fine / Sport (2)</option><option>Light / DK (3)</option><option selected>Medium / Worsted (4)</option><option>Bulky (5)</option><option>Super bulky (6)</option><option>Jumbo (7)</option></select></div>
+<div><label>Color name</label><input id="y_color"></div>
+<div class="w"><label>Composition (fiber content)</label><input id="y_comp" placeholder="e.g. 80% merino wool, 20% nylon"></div>
+<div><label>Yardage per skein</label><input id="y_yds" placeholder="e.g. 220 yds"></div>
+<div><label>Skein size (weight)</label><input id="y_size" placeholder="e.g. 100 g"></div>
+<div><label>Skeins needed</label><input id="y_n" type="number" min="0"></div>
+<div><label>Gauge (sts &times; rows / 4 in)</label><input id="y_gauge" placeholder="e.g. 18 × 24"></div>
+</div>
+</div>
+<div class="card">
+<h2>Knitting needles</h2>
+<div class="f">
+<div><label>Size (mm)</label><input id="n_mm" placeholder="e.g. 5.0"></div>
+<div><label>Size (US)</label><input id="n_us" placeholder="e.g. 8"></div>
+<div><label>Type</label>
+<select id="n_type"><option>Straight</option><option>Circular (fixed)</option><option>Interchangeable circular</option><option>Double-pointed (DPN)</option></select></div>
+<div><label>Cable length</label><input id="n_len" placeholder="e.g. 24 in"></div>
+<div class="w"><label>Material</label>
+<select id="n_mat"><option>Bamboo</option><option>Wood</option><option>Metal</option><option>Plastic</option><option>Carbon fiber</option></select></div>
+<div class="w"><label>Notes</label><input id="n_notes" placeholder="e.g. go down a size for ribbing"></div>
+</div>
+</div>
+</div>
+
+<div class="card">
+<h2>Chart</h2>
+<div class="bar noprint" id="tabs"></div>
+<div class="bar noprint"><div style="width:220px"><label>Section name</label><input id="secname"></div><button id="delsec">Delete this section</button></div>
+<div class="bar noprint">
+<div><label>Stitches wide</label><input id="cols" type="number" min="1" max="60" value="12"></div>
+<div><label>Rows tall</label><input id="rows" type="number" min="1" max="80" value="8"></div>
+<div style="width:160px"><label>Knitting style</label><select id="mode"><option value="flat">Flat (back &amp; forth)</option><option value="round">In the round</option></select></div>
+<div style="width:150px"><label>Knitter</label><select id="hand"><option value="right">Right-handed</option><option value="left">Left-handed</option></select></div>
+<button id="clear">Clear chart</button>
+</div>
+<div class="bar noprint">
+<div><label>Repeat from st</label><input id="rep_from" type="number" min="1" placeholder="none"></div>
+<div><label>to st</label><input id="rep_to" type="number" min="1"></div>
+<div><label>Times</label><input id="rep_n" type="number" min="1" value="1"></div>
+<div><label>Work rows</label><input id="rs_a" type="number" min="1"></div><div><label>through</label><input id="rs_b" type="number" min="1"></div><div><label>total times</label><input id="rs_n" type="number" min="1"></div>
+<span class="hint" style="flex:1;min-width:200px">Repeat markers: stitch numbers are shown under the chart (counted from the right). The outlined columns are written as [ &hellip; ] &times; N.</span>
+</div>
+<label class="noprint" style="text-transform:none;font-weight:400;margin-bottom:8px"><input type="checkbox" id="autons" checked style="width:auto"> Auto-fill “no stitch” cells beside decreases</label>
+<div class="pal noprint" id="pal"></div>
+<div class="bar noprint"><div style="width:210px"><label>Number of yarn colors (1–12)</label><input id="ncol" type="number" min="1" max="12" value="4"></div></div>
+<div class="pal noprint" id="clr"></div>
+<div class="bar noprint">
+<button id="undo">↶ Undo</button><button id="redo">↷ Redo</button><button id="mirror">Mirror left–right</button><button id="copyblk">Copy selection</button>
+<div style="width:160px"><label>Paint tool</label><select id="tool"><option value="cell">Single cell</option><option value="row">Fill whole row</option><option value="col">Fill whole column</option><option value="sel">Select block</option><option value="paste">Paste block</option></select></div>
+<div style="width:190px"><label>Start from a preset</label><select id="preset"><option value="">Choose…</option><option value="stock">Stockinette</option><option value="garter">Garter</option><option value="rib">Rib (K2, P2)</option><option value="seed">Seed stitch</option><option value="basket">Basketweave</option></select></div>
+</div>
+<div class="scroll"><table class="ch" id="chart"></table></div>
+<p class="hint" id="hint"></p>
+<div class="hint" id="legend"></div>
+<p class="warn" id="msg"></p>
+</div>
+
+<div class="card">
+<h2>Now knitting</h2>
+<div class="bar noprint"><button id="prev">&#9664; Previous row</button><button class="p" id="next">Next row &#9654;</button><button id="resetcnt">Reset counter</button></div>
+<div id="cnt_info" class="cnt"></div>
+<div id="cnt_text" style="font-size:20px;margin-top:6px"></div>
+</div>
+<div class="card noprint">
+<h2>Size &amp; yardage calculator</h2>
+<div class="f">
+<div><label>Gauge: stitches / 4 in</label><input id="g_s" type="number" value="18"></div>
+<div><label>Gauge: rows / 4 in</label><input id="g_r" type="number" value="24"></div>
+<div><label>Finished width (in)</label><input id="g_w" type="number" value="8"></div>
+<div><label>Finished height (in)</label><input id="g_h" type="number" value="10"></div>
+</div>
+<p id="g_out" class="hint"></p>
+</div>
+<div class="card noprint">
+<h2>Save &amp; share pattern</h2>
+<p class="hint">Export makes a code you can copy into a note or send to someone. To load a pattern, paste its code here and press Import.</p>
+<textarea id="code" rows="3"></textarea>
+<div class="bar" style="margin-top:8px"><button id="export">Export code</button><button id="copy">Copy</button><button class="p" id="import">Import code</button><span class="hint" id="codemsg"></span></div>
+</div>
+
+<div class="card">
+<h2>Written instructions</h2>
+<p class="hint noprint">Edit any row and the chart updates as you type. Use K3, P2, YO, M1L, M1R, KFB, K2tog, SSK, K3tog, SK2P, S2KP, P2tog, SSP, Sl1, C4F, C4B, NS (no stitch), a color like K3 (B), or a repeat like [K2, P2] &times; 3. Rows are written as you work them, so on wrong-side rows a chart knit is written as P.</p>
+<div id="sum" class="cnt" style="margin-bottom:8px"></div>
+<ol id="ins"></ol>
+</div>
+
+<div class="noprint bar">
+<button class="p" id="print">Print pattern</button>
+<button id="reset">Start over</button>
+<span class="hint" id="saved"></span>
+</div>
+</main>
+
+<script>
+const ST={
+ k:{sym:'',lab:'Knit',rs:'K',ws:'P'},
+ p:{sym:'•',lab:'Purl',rs:'P',ws:'K'},
+ yo:{sym:'O',lab:'Yarn over',rs:'YO',ws:'YO',use:0},
+ k2:{sym:'/',lab:'K2tog',rs:'K2tog',ws:'P2tog',use:2},
+ ssk:{sym:'\\',lab:'SSK',rs:'SSK',ws:'SSP',use:2},
+ sl:{sym:'V',lab:'Slip 1',rs:'Sl1',ws:'Sl1'},
+ c4f:{sym:'F',lab:'Cable 4 front',rs:'C4F',ws:'P'},
+ c4b:{sym:'B',lab:'Cable 4 back',rs:'C4B',ws:'P'},
+ m1l:{sym:'L',lab:'Make 1 left',rs:'M1L',ws:'M1L',use:0},
+ m1r:{sym:'R',lab:'Make 1 right',rs:'M1R',ws:'M1R',use:0},
+ k3:{sym:'/3',lab:'K3tog',rs:'K3tog',ws:'P3tog',use:3},
+ sk2p:{sym:'\\3',lab:'SK2P',rs:'SK2P',ws:'P',use:3},
+ s2kp:{sym:'^',lab:'S2KP (centered)',rs:'S2KP',ws:'P',use:3},
+ pk2:{sym:'p/',lab:'P2tog (purl dec)',rs:'P2tog',ws:'K2tog',use:2},
+ pssk:{sym:'p\\',lab:'SSP (purl dec)',rs:'SSP',ws:'SSK',use:2},
+ kfb:{sym:'kf',lab:'KFB (2 cells)',rs:'KFB',ws:'PFB',use:0.5},
+ n:{sym:'×',lab:'No stitch',rs:'NS',ws:'NS',use:0}
+};
+const GRP={c4f:4,c4b:4,kfb:2};
+const RSMAP={kfb:'kfb',k:'k',p:'p',yo:'yo',k2tog:'k2',ssk:'ssk',k3tog:'k3',p2tog:'pk2',ssp:'pssk',sk2p:'sk2p',s2kp:'s2kp',m1l:'m1l',m1r:'m1r',sl1:'sl',sl:'sl',c4f:'c4f',c4b:'c4b',ns:'n'};
+const WSMAP={pfb:'kfb',k:'p',p:'k',yo:'yo',p2tog:'k2',ssp:'ssk',p3tog:'k3',k2tog:'pk2',ssk:'pssk',m1l:'m1l',m1r:'m1r',sl1:'sl',sl:'sl',ns:'n'};
+const RE=/^(kfb|pfb|k2tog|p2tog|k3tog|p3tog|ssk|ssp|sk2p|s2kp|m1l|m1r|c4f|c4b|sl1|sl|ns|yo|k|p)\s*(?:[×x*]\s*)?(\d+)?\s*(?:\(\s*([a-l])\s*\))?$/i;
+const FIELDS=['title','y_name','y_weight','y_color','y_comp','y_yds','y_size','y_n','y_gauge','n_mm','n_us','n_type','n_len','n_mat','n_notes','cols','rows','mode','rep_from','rep_to','rep_n','g_s','g_r','g_w','g_h','p_status','p_start','p_done','p_notes','ncol','hand'];
+const $=id=>document.getElementById(id);
+let grid=[],cur='k',cc=0,down=false,err={},cnt={row:1,reps:0},colors=['#f2e8d5','#b5483a','#3b5b7a','#6f8f5a','#e0b13d','#7a4a8c','#2f7f78','#d98c5f','#8a8a8a','#222222','#e8a0b4','#a3c45a'];
+const used=s=>ST[s].use===undefined?1:ST[s].use;
+const isRS=i=>$('mode').value==='round'||i%2===0;
+const esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;');
+const lbl=i=>$('mode').value==='round'?'Round '+(i+1):'Row '+(i+1)+' ('+(isRS(i)?'RS':'WS')+')';
+const usedColors=()=>new Set(grid.flat().filter(x=>x.s!=='n').map(x=>x.c)).size;
+const contrast=h=>{const n=parseInt(h.slice(1),16);return ((n>>16)*299+(n>>8&255)*587+(n&255)*114)/1000>140?'#000':'#fff'};
+function repRange(){const C=grid[0].length,a=+$('rep_from').value,b=+$('rep_to').value;return(a>=1&&b>=a&&b<=C)?[C-b,C-a]:null}
+
+function resize(){snapG();
+ const c=Math.max(1,Math.min(60,+$('cols').value||12)),r=Math.max(1,Math.min(80,+$('rows').value||8));
+ grid=Array.from({length:r},(_,i)=>Array.from({length:c},(_,j)=>(grid[i]&&grid[i][j])||{s:'k',c:0}));
+ cnt.row=Math.min(cnt.row,r);err={};draw();
+}
+function pal(){
+ $('pal').innerHTML='';
+ for(const k in ST){
+  const b=document.createElement('button');b.className=k===cur?'on':'';
+  b.innerHTML='<span class="sym">'+(ST[k].sym||'&nbsp;')+'</span>'+ST[k].lab;
+  b.onclick=()=>{cur=k;pal()};$('pal').appendChild(b);
+ }
+ $('clr').innerHTML='<span class="cnt">Yarn color:</span>';
+ if(cc>=NC())cc=0;colors.slice(0,NC()).forEach((h,c)=>{
+  const b=document.createElement('button');b.className=c===cc?'on':'';b.textContent='ABCDEFGHIJKL'[c];
+  b.style.borderLeft='10px solid '+h;b.onclick=()=>{cc=c;pal()};
+  const i=document.createElement('input');i.type='color';i.value=h;i.style.width='34px';
+  i.oninput=()=>{colors[c]=i.value;b.style.borderLeft='10px solid '+i.value;drawChart();save()};
+  $('clr').append(b,i);
+ });
+}
+function drawChart(){
+ const R=grid.length,C=grid[0].length,round=$('mode').value==='round',rg=repRange(),multi=usedColors()>1;
+ let h='';
+ for(let i=R-1;i>=0;i--){
+  const rs=isRS(i);
+  h+='<tr'+(i+1===cnt.row?' class="cur"':'')+'><th>'+(rs!==lh()?'':i+1)+'</th>';
+  for(let j=0;j<C;j++){
+   const x=grid[i][j],cl=[sel(i,j)?'sel':'',x.s==='n'?'n':'',rg&&j===rg[0]?'rl':'',rg&&j===rg[1]?'rr':''].join(' ');
+   const sty=multi&&x.s!=='n'?' style="background:'+colors[x.c]+';color:'+contrast(colors[x.c])+'"':'';
+   h+='<td data-i="'+i+'" data-j="'+j+'" class="'+cl+'"'+sty+'>'+ST[x.s].sym+'</td>';
+  }
+  h+='<th>'+(rs!==lh()?i+1:'')+'</th></tr>';
+ }
+ h+='<tr><th></th>';
+ for(let j=0;j<C;j++)h+='<th'+(rg&&j>=rg[0]&&j<=rg[1]?' class="rp"':'')+'>'+(C-j)+'</th>';
+ $('chart').innerHTML=h+'<th></th></tr>';
+ const uk=[...new Set(grid.flat().map(x=>x.s))];
+ $('legend').innerHTML='<b>Key:</b> '+uk.map(k=>'<span class="sym">'+(ST[k].sym||'□')+'</span>'+ST[k].lab).join(' &nbsp; ');
+ $('hint').textContent=round?'In the round: every round is a right-side round, read right to left. Row 1 is at the bottom. Cables (F/B) cover 4 stitches. Increases (YO, M1L, M1R) add a stitch; decreases use 2 or 3 stitches, with no-stitch cells beside them.':'Flat knitting: odd rows are right-side rows (read right to left); even rows are wrong-side rows (read left to right, chart shows the right-side view). Row 1 is at the bottom. Cables (F/B) cover 4 stitches and go on right-side rows. Increases (YO, M1L, M1R) add a stitch; decreases use 2 or 3 stitches, with no-stitch cells beside them. SK2P and S2KP go on right-side rows only.';
+}
+function tokens(cells,rs){
+ const out=[];let i=0;
+ while(i<cells.length){
+  const x=cells[i];
+  if(GRP[x.s]&&(rs||x.s==='kfb')){
+   let j=i;while(j<cells.length&&j-i<GRP[x.s]&&cells[j].s===x.s&&cells[j].c===x.c)j++;
+   if(j-i===GRP[x.s]){out.push({t:ST[x.s][rs?'rs':'ws'],c:x.c});i=j;continue}
+  }
+  out.push({t:GRP[x.s]&&(rs||x.s==='kfb')?(rs?'K':'P'):ST[x.s][rs?'rs':'ws'],c:x.c});i++;
+ }
+ return out;
+}
+function runs(tk,multi){
+ const out=[];let i=0;
+ while(i<tk.length){
+  let j=i;while(j<tk.length&&tk[j].t===tk[i].t&&tk[j].c===tk[i].c)j++;
+  const n=j-i,t=tk[i].t;
+  out.push((n===1?t:(t.length<=2&&t!=='YO'?t+n:t+' ×'+n))+(multi?' ('+'ABCDEFGHIJKL'[tk[i].c]+')':''));
+  i=j;
+ }
+ return out.join(', ');
+}
+function rowText(i){
+ const rs=isRS(i),C=grid[i].length,rg=repRange(),N=+$('rep_n').value||1;
+ const order=[...Array(C).keys()];if(rs!==lh())order.reverse();
+ const parts=[[],[],[]];
+ order.forEach(j=>{
+  const inR=rg&&N>1&&j>=rg[0]&&j<=rg[1];
+  parts[inR?1:(parts[1].length?2:0)].push(j);
+ });
+ const multi=usedColors()>1,f=a=>runs(tokens(a.map(j=>grid[i][j]),rs),multi);
+ return [f(parts[0]),parts[1].length?'['+f(parts[1])+'] ×'+N:'',f(parts[2])].filter(Boolean).join(', ');
+}
+function parseSeq(str,rs){
+ const map=rs?RSMAP:WSMAP,out=[];
+ for(let raw of str.split(',')){
+  raw=raw.trim().replace(/[.;]$/,'');if(!raw)continue;
+  const m=raw.match(RE),key=m&&m[1].toLowerCase();
+  if(!m||!map[key])throw new Error(raw);
+  const s=map[key],n=+m[2]||1,c=m[3]?m[3].toLowerCase().charCodeAt(0)-97:0;
+  for(let q=0;q<(GRP[s]||1)*n;q++)out.push({s,c});
+ }
+ return out;
+}
+function stats(i){
+ const rg=repRange(),N=+$('rep_n').value||1;let made=0,took=0;
+ grid[i].forEach((x,j)=>{if(x.s==='n')return;const m=rg&&j>=rg[0]&&j<=rg[1]?N:1;made+=m;took+=used(x.s)*m});
+ return{made,took:Math.round(took)};
+}
+function refreshMeta(){
+ let prev=null,warns=0;
+ grid.forEach((_,i)=>{
+  const{made,took}=stats(i);let w='';
+  if(prev!==null&&took!==prev){w='Heads up: this row uses '+took+' stitches but the previous row ended with '+prev+'.';warns++}
+  if(err[i])w=err[i];
+  const e=$('m'+i);if(e)e.innerHTML='<span class="cnt">'+made+' sts</span>'+(w?'<div class="warn">'+esc(w)+'</div>':'');
+  prev=made;
+ });
+ $('sum').textContent='Cast on '+stats(0).took+' stitches. '+grid.length+' '+($('mode').value==='round'?'rounds':'rows')+' in total.'+rsText()+(warns?' ('+warns+' stitch-count warning'+(warns>1?'s':'')+')':'');
+}
+function instr(){
+ let h='';
+ grid.forEach((_,i)=>{
+  const t=rowText(i);
+  h+='<li class="row"><b>'+lbl(i)+':</b><textarea data-i="'+i+'" rows="'+Math.max(1,Math.ceil(t.length/55))+'">'+esc(t)+'</textarea><input class="rn" data-i="'+i+'" style="margin-top:4px;font-size:13px" placeholder="Row note (optional)" value="'+esc(RN()[i]||'').replace(/"/g,'&quot;')+'"><div id="m'+i+'"></div></li>';
+ });
+ $('ins').innerHTML=h;refreshMeta();counter();
+}
+function counter(){
+ const i=cnt.row-1;
+ $('cnt_info').textContent=lbl(i)+' of '+grid.length+' · pattern repeats completed: '+cnt.reps;
+ $('cnt_text').textContent=rowText(i)+(RN()[i]?'  — Note: '+RN()[i]:'');
+ document.querySelectorAll('#ins li').forEach((el,k)=>el.classList.toggle('cur',k===i));
+}
+function onRowInput(i,text){
+ const rs=isRS(i);let C=grid[0].length,cells,reg=null,N=1;
+ const m=text.match(/\[([^\]]*)\]\s*(?:[×x*]\s*)?(\d+)?/);
+ try{
+  if(m){
+   const B=parseSeq(text.slice(0,m.index),rs),I=parseSeq(m[1],rs),A=parseSeq(text.slice(m.index+m[0].length),rs);
+   cells=[...B,...I,...A];reg=[B.length,B.length+I.length-1];N=+m[2]||1;
+  }else cells=parseSeq(text,rs);
+ }catch(e){err[i]='Couldn’t read “'+e.message+'”. Try K3, P2, YO, K2tog, SSK, Sl1, C4F, C4B or NS.';refreshMeta();return}
+ if(!cells.length){err[i]='This row is empty.';refreshMeta();return}
+ err[i]='';
+ const L=Math.max(C,cells.length);
+ while(cells.length<L)cells.push({s:'n',c:0});
+ if(L>C){grid.forEach(r=>{while(r.length<L)r.push({s:'k',c:0})});$('cols').value=L}
+ grid[i]=(rs!==lh())?cells.reverse():cells;
+ if(reg&&N>1||reg&&$('rep_n').value>1||reg){
+  const js=reg.map(r=>(rs!==lh())?L-1-r:r),lo=Math.min(...js),hi=Math.max(...js);
+  if(N>1){$('rep_from').value=L-hi;$('rep_to').value=L-lo;$('rep_n').value=N}
+ }
+ drawChart();refreshMeta();counter();save();
+}
+function msg(t){$('msg').textContent=t||''}
+function paint(el,first){
+ const td=el&&el.closest&&el.closest('td');if(!td||td.dataset.i===undefined)return;
+ const i=+td.dataset.i,j=+td.dataset.j,C=grid[0].length;msg('');
+ const tl=$('tool').value;
+ if(tl==='sel'){if(first)selA=[i,j];selB=[i,j];drawChart();return}
+ if(tl==='paste'){if(first&&clip){clip.forEach((r,a)=>r.forEach((x,b)=>{if(grid[i+a]&&grid[i+a][j+b])grid[i+a][j+b]={s:x.s,c:x.c}}));err={};draw()}return}
+ if((tl==='row'||tl==='col')&&first&&!GRP[cur]){const cells=tl==='row'?grid[i].map((_,q)=>[i,q]):grid.map((_,q)=>[q,j]);cells.forEach(([a,b])=>{if(!((cur==='sk2p'||cur==='s2kp')&&!isRS(a)))grid[a][b]={s:cur,c:cc}});err={};draw();return}
+ if((tl==='row'||tl==='col')&&!first)return;
+ if(GRP[cur]){
+  if(!first)return;
+  if(/^c4/.test(cur)&&!isRS(i)){msg('Cables are worked on right-side rows only. Pick a row with its number on the right.');return}
+  if(C<GRP[cur]){msg('The chart is too narrow for that stitch.');return}
+  const st=Math.min(j,C-GRP[cur]);for(let q=0;q<GRP[cur];q++)grid[i][st+q]={s:cur,c:cc};
+ }else{
+  if((cur==='sk2p'||cur==='s2kp')&&!isRS(i)){msg('SK2P and S2KP are worked on right-side rows only. Pick a row with its number on the right.');return}
+  const x=grid[i][j];if(x.s===cur&&x.c===cc&&!first)return;grid[i][j]={s:cur,c:cc};
+  if(first&&used(cur)>1&&$('autons').checked){const d=isRS(i)?-1:1;for(let q=1;q<used(cur);q++){const jj=j+d*q;if(jj>=0&&jj<C)grid[i][jj]={s:'n',c:0}}}
+ }
+ err={};draw();
+}
+function draw(){drawChart();instr();save()}
+function save(){
+ try{
+  stash();const d={grid,cur,cc,colors,cnt,secs,sec};FIELDS.forEach(f=>d[f]=$(f).value);
+  localStorage.setItem('knit-designer2',JSON.stringify(d));$('saved').textContent='Saved in this browser';
+ }catch(e){$('saved').textContent=''}
+}
+function load(){
+ try{
+  const d=JSON.parse(localStorage.getItem('knit-designer2')||'null');
+  if(d){FIELDS.forEach(f=>{if(d[f]!==undefined)$(f).value=d[f]});grid=d.grid||[];colors=padC(d.colors);cnt=d.cnt||cnt;cc=d.cc||0;if(d.secs&&d.secs.length){secs=d.secs;sec=Math.min(d.sec||0,secs.length-1);const S=secs[sec];grid=S.grid;Object.keys(S.f).forEach(f=>$(f).value=S.f[f]);cnt=S.cnt||cnt}}
+ }catch(e){}
+}
+const ch=$('chart');
+ch.addEventListener('pointerdown',e=>{down=true;if(e.target.closest('td'))snapG();paint(e.target,true)});
+$('ins').addEventListener('focusin',e=>{if(e.target.tagName==='TEXTAREA')snapG()});
+ch.addEventListener('pointermove',e=>{if(down)paint(document.elementFromPoint(e.clientX,e.clientY),false)});
+window.addEventListener('pointerup',()=>down=false);
+$('ins').addEventListener('input',e=>{if(e.target.tagName==='TEXTAREA')onRowInput(+e.target.dataset.i,e.target.value)});
+$('ins').addEventListener('change',()=>setTimeout(()=>{if(!document.activeElement||!/TEXTAREA|INPUT/.test(document.activeElement.tagName))instr()},0));
+['cols','rows'].forEach(f=>$(f).addEventListener('change',resize));
+['mode','rep_from','rep_to','rep_n'].forEach(f=>$(f).addEventListener('change',()=>{err={};draw()}));
+FIELDS.filter(f=>!['cols','rows','mode','rep_from','rep_to','rep_n'].includes(f)).forEach(f=>$(f).addEventListener('input',save));
+$('clear').onclick=()=>{snapG();grid=grid.map(r=>r.map(()=>({s:'k',c:0})));err={};draw()};
+$('next').onclick=()=>{if(cnt.row>=grid.length){cnt.row=1;cnt.reps++}else cnt.row++;drawChart();counter();save()};
+$('prev').onclick=()=>{if(cnt.row>1)cnt.row--;else if(cnt.reps>0){cnt.row=grid.length;cnt.reps--}drawChart();counter();save()};
+$('resetcnt').onclick=()=>{cnt={row:1,reps:0};drawChart();counter();save()};
+$('print').onclick=()=>window.print();
+$('reset').onclick=()=>{if(confirm('Clear everything and start over?')){try{localStorage.removeItem('knit-designer2')}catch(e){}location.reload()}};
+let undoS=[],redoS=[];
+function snapG(){if(grid.length){undoS.push(JSON.stringify(grid));if(undoS.length>60)undoS.shift();redoS=[]}}
+function setG(s){grid=JSON.parse(s);$('rows').value=grid.length;$('cols').value=grid[0].length;cnt.row=Math.min(cnt.row,grid.length);err={};draw()}
+$('undo').onclick=()=>{if(undoS.length){redoS.push(JSON.stringify(grid));setG(undoS.pop())}};
+$('redo').onclick=()=>{if(redoS.length){undoS.push(JSON.stringify(grid));setG(redoS.pop())}};
+document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='z'&&!/TEXTAREA|INPUT/.test(document.activeElement.tagName)){e.preventDefault();$(e.shiftKey?'redo':'undo').click()}});
+const MIR={k2:'ssk',ssk:'k2',m1l:'m1r',m1r:'m1l',c4f:'c4b',c4b:'c4f',pk2:'pssk',pssk:'pk2'};
+$('mirror').onclick=()=>{snapG();grid=grid.map(r=>r.slice().reverse().map(x=>({s:MIR[x.s]||x.s,c:x.c})));err={};draw()};
+$('preset').onchange=e=>{const v=e.target.value;if(!v)return;snapG();const C=grid[0].length;
+ grid=grid.map((r,i)=>r.map((_,j)=>({c:0,s:v==='stock'?'k':v==='garter'?(i%2?'p':'k'):v==='rib'?((C-1-j)%4<2?'k':'p'):v==='seed'?((i+j)%2?'p':'k'):((Math.floor(j/4)+Math.floor(i/4))%2?'p':'k')})));
+ e.target.value='';err={};draw()};
+const pack=()=>{stash();const d={v:4,grid,colors,cnt,secs,sec};FIELDS.forEach(f=>d[f]=$(f).value);return JSON.stringify(d)};
+$('export').onclick=()=>{$('code').value=pack();$('code').select();$('codemsg').textContent='Code ready. Copy it and keep it somewhere safe.'};
+$('copy').onclick=async()=>{if(!$('code').value)$('code').value=pack();$('code').select();try{await navigator.clipboard.writeText($('code').value);$('codemsg').textContent='Copied.'}catch(e){$('codemsg').textContent='Press Ctrl/Cmd+C to copy the selected code.'}};
+$('import').onclick=()=>{try{const d=JSON.parse($('code').value);if(!d.grid||!d.grid.length)throw 0;snapG();FIELDS.forEach(f=>{if(d[f]!==undefined)$(f).value=d[f]});colors=padC(d.colors);cnt=d.cnt||{row:1,reps:0};grid=d.grid;if(d.secs&&d.secs.length){secs=d.secs;sec=Math.min(d.sec||0,secs.length-1);const S=secs[sec];grid=S.grid;Object.keys(S.f).forEach(f=>$(f).value=S.f[f]);cnt=S.cnt||cnt}else{secs=[{name:'Main chart'}];sec=0}err={};pal();draw();tabs();calc();$('codemsg').textContent='Pattern imported.'}catch(e){$('codemsg').textContent='That code could not be read.'}};
+function calc(){
+ const s=+$('g_s').value,r=+$('g_r').value,w=+$('g_w').value,h=+$('g_h').value;
+ if(!(s>0&&r>0&&w>0&&h>0)){$('g_out').textContent='';return}
+ const st=Math.ceil(w*s/4),rw=Math.ceil(h*r/4),tot=st*rw,yds=Math.ceil(tot*3.5*(4/s)/36),sk=parseFloat($('y_yds').value),n=Math.ceil(yds/sk);
+ $('g_out').textContent='About '+st+' stitches wide and '+rw+' rows tall ('+tot.toLocaleString()+' stitches). Rough yarn estimate: '+yds+' yards'+(sk>0?', or about '+n+' skein'+(n>1?'s':'')+' at '+sk+' yards each.':'. Enter the yardage per skein under Yarn to see skeins.')+' Your chart is '+grid[0].length+' stitches by '+grid.length+' rows.';
+}
+['g_s','g_r','g_w','g_h','y_yds'].forEach(f=>$(f).addEventListener('input',calc));
+let secs=[{name:'Main chart'}],sec=0;
+const padC=a=>(a||colors).concat(colors.slice((a||colors).length));
+const SF=['cols','rows','mode','rep_from','rep_to','rep_n','rs_a','rs_b','rs_n'];
+function stash(){const S=secs[sec];S.grid=grid;S.cnt=cnt;S.f={};SF.forEach(f=>S.f[f]=$(f).value)}
+function loadSec(n){sec=n;const S=secs[n];grid=S.grid;cnt=S.cnt||{row:1,reps:0};SF.forEach(f=>$(f).value=(S.f[f]??''));undoS=[];redoS=[];err={};draw();tabs()}
+function goSec(n){stash();loadSec(n)}
+function tabs(){
+ $('tabs').innerHTML='';
+ secs.forEach((S,i)=>{const b=document.createElement('button');b.textContent=S.name||'Section '+(i+1);b.className=i===sec?'p':'';b.onclick=()=>goSec(i);$('tabs').appendChild(b)});
+ const a=document.createElement('button');a.textContent='+ Add section';
+ a.onclick=()=>{stash();secs.push({name:'Section '+(secs.length+1),grid:Array.from({length:8},()=>Array.from({length:12},()=>({s:'k',c:0}))),cnt:{row:1,reps:0},f:{cols:12,rows:8,mode:$('mode').value,rep_from:'',rep_to:'',rep_n:1,rs_a:'',rs_b:'',rs_n:''}});loadSec(secs.length-1)};
+ $('tabs').appendChild(a);$('secname').value=secs[sec].name||'';
+}
+$('secname').oninput=()=>{secs[sec].name=$('secname').value;save()};
+$('secname').onchange=tabs;
+$('delsec').onclick=()=>{if(secs.length>1){const k=Math.max(0,sec-1);secs.splice(sec,1);loadSec(k)}};
+function rsText(){const a=+$('rs_a').value,b=+$('rs_b').value,n=+$('rs_n').value;return(a>=1&&b>=a&&b<=grid.length&&n>1)?' Work rows '+a+'–'+b+' a total of '+n+' times ('+(grid.length+(b-a+1)*(n-1))+' rows overall).':''}
+['rs_a','rs_b','rs_n'].forEach(f=>$(f).addEventListener('input',()=>{refreshMeta();save()}));
+let selA=null,selB=null,clip=null;
+const NC=()=>Math.max(1,Math.min(12,+$('ncol').value||4));
+const lh=()=>$('hand').value==='left';
+const RN=()=>secs[sec].rn||(secs[sec].rn={});
+const sel=(i,j)=>{if(!selA||!selB)return false;return i>=Math.min(selA[0],selB[0])&&i<=Math.max(selA[0],selB[0])&&j>=Math.min(selA[1],selB[1])&&j<=Math.max(selA[1],selB[1])};
+$('ncol').addEventListener('change',()=>{pal();drawChart();save()});
+$('hand').addEventListener('change',()=>{err={};draw()});
+$('ins').addEventListener('input',e=>{if(e.target.classList.contains('rn')){RN()[e.target.dataset.i]=e.target.value;save();counter()}});
+$('copyblk').onclick=()=>{
+ if(!selA){msg('Choose “Select block” as the paint tool, then drag over the cells to copy.');return}
+ const a=Math.min(selA[0],selB[0]),b=Math.max(selA[0],selB[0]),c=Math.min(selA[1],selB[1]),d=Math.max(selA[1],selB[1]);
+ clip=grid.slice(a,b+1).map(r=>r.slice(c,d+1).map(x=>({s:x.s,c:x.c})));
+ msg('Copied '+clip.length+' × '+clip[0].length+' cells. Choose “Paste block” and click where the top-left corner should go.');
+};
+load();pal();resize();calc();tabs();
+</script>
+<script>if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(function(){});</script>
+</body>
+</html>
